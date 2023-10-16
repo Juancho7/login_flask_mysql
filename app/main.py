@@ -43,5 +43,27 @@ def login():
     return render_template("login.html", message=msg)
 
 
+@app.route("/register", methods=["POST", "GET"])
+def register():
+    msg = ""
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+        email = request.form["email"]
+        cursor = mysql.connection.cursor(DictCursor)
+        sql = "SELECT * FROM login WHERE username = %s OR email = %s"
+        cursor.execute(sql, (username, email))
+        account = cursor.fetchone()
+        if account:
+            msg = "This account already exists!"
+        else:
+            sql = "INSERT INTO login (username, password, email) VALUES (%s, %s, %s)"
+            cursor.execute(sql, (username, password, email))
+            mysql.connection.commit()
+            msg = "Registered succesfully"
+        return render_template("register.html", message=msg)
+    return render_template("register.html", message=msg)
+
+
 if __name__ == "__main__":
     app.run(debug=True)
