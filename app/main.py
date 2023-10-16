@@ -27,15 +27,17 @@ def login():
         password = request.form["password"]
         try:
             cursor = mysql.connection.cursor(DictCursor)
-            sql = "SELECT * FROM login WHERE username = %s AND password = %s"
-            cursor.execute(sql, (username, password))
+            sql = f"SELECT * FROM login WHERE (username = '{username}' AND password = '{password}') OR (email = '{username}' AND password = '{password}')"
+            cursor.execute(sql)
             account = cursor.fetchone()
+            print(account)
             if account:
+                user = account["username"]
                 session["loggedin"] = True
                 session["id"] = account["id"]
-                session["username"] = account["username"]
+                session["username"] = user
                 msg = "Logged in succesfully"
-                return render_template("index.html", message=msg)
+                return render_template("index.html", message=msg, user=user)
             else:
                 msg = "Incorrect user / password"
         except Exception as e:
